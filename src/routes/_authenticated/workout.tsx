@@ -88,19 +88,29 @@ function WorkoutPage() {
             reps: saved.reps,
             date,
           });
-          return { pr: true };
+          return { pr: true, userId: user.id };
         }
       }
-      return { pr: false };
+      return { pr: false, userId: user.id };
     },
-    onSuccess: (r) => {
+    onSuccess: async (r) => {
       qc.invalidateQueries({ queryKey: ["workout", day, date] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
       qc.invalidateQueries({ queryKey: ["prs"] });
       if (r.pr) toast.success("🏆 New personal record!");
+      try {
+        const unlocked = await checkAndAwardBadges({ userId: r.userId, triggeredPr: r.pr });
+        for (const b of unlocked) {
+          toast.success(`${b.icon} ${b.label}`, { description: `Achievement unlocked — ${b.description}` });
+        }
+        if (unlocked.length) qc.invalidateQueries({ queryKey: ["achievements"] });
+      } catch (e) {
+        console.error("Badge check failed", e);
+      }
     },
     onError: (e) => toast.error((e as Error).message),
   });
+
 
   return (
     <div className="space-y-5">
