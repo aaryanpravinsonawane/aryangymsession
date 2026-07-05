@@ -7,6 +7,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Trophy, Moon } from "lucide-react";
 import { toast } from "sonner";
+import { checkAndAwardBadges } from "@/lib/badges";
+
+
 
 export const Route = createFileRoute("/_authenticated/workout")({
   ssr: false,
