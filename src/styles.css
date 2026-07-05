@@ -120,3 +120,8 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
 }
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
