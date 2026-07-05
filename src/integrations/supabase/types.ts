@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          badge_type: string
+          created_at: string
+          id: string
+          metadata: Json
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          badge_type: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          badge_type?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       body_weight_logs: {
         Row: {
           created_at: string
@@ -100,6 +127,36 @@ export type Database = {
           start_date?: string
           start_weight?: number
           target_rate?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notification_settings: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          planned_days: string[]
+          reminder_time: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          planned_days?: string[]
+          reminder_time?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          planned_days?: string[]
+          reminder_time?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []

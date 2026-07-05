@@ -14,9 +14,11 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedWorkoutRouteImport } from './routes/_authenticated/workout'
 import { Route as AuthenticatedWeightRouteImport } from './routes/_authenticated/weight'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedPrsRouteImport } from './routes/_authenticated/prs'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedAchievementsRouteImport } from './routes/_authenticated/achievements'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -42,6 +44,11 @@ const AuthenticatedWeightRoute = AuthenticatedWeightRouteImport.update({
   path: '/weight',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPrsRoute = AuthenticatedPrsRouteImport.update({
   id: '/prs',
   path: '/prs',
@@ -57,22 +64,32 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAchievementsRoute =
+  AuthenticatedAchievementsRouteImport.update({
+    id: '/achievements',
+    path: '/achievements',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/achievements': typeof AuthenticatedAchievementsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/goals': typeof AuthenticatedGoalsRoute
   '/prs': typeof AuthenticatedPrsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/weight': typeof AuthenticatedWeightRoute
   '/workout': typeof AuthenticatedWorkoutRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/achievements': typeof AuthenticatedAchievementsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/goals': typeof AuthenticatedGoalsRoute
   '/prs': typeof AuthenticatedPrsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/weight': typeof AuthenticatedWeightRoute
   '/workout': typeof AuthenticatedWorkoutRoute
 }
@@ -81,9 +98,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/achievements': typeof AuthenticatedAchievementsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
   '/_authenticated/prs': typeof AuthenticatedPrsRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/weight': typeof AuthenticatedWeightRoute
   '/_authenticated/workout': typeof AuthenticatedWorkoutRoute
 }
@@ -92,21 +111,34 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/achievements'
     | '/dashboard'
     | '/goals'
     | '/prs'
+    | '/settings'
     | '/weight'
     | '/workout'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard' | '/goals' | '/prs' | '/weight' | '/workout'
+  to:
+    | '/'
+    | '/auth'
+    | '/achievements'
+    | '/dashboard'
+    | '/goals'
+    | '/prs'
+    | '/settings'
+    | '/weight'
+    | '/workout'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/achievements'
     | '/_authenticated/dashboard'
     | '/_authenticated/goals'
     | '/_authenticated/prs'
+    | '/_authenticated/settings'
     | '/_authenticated/weight'
     | '/_authenticated/workout'
   fileRoutesById: FileRoutesById
@@ -154,6 +186,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWeightRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/prs': {
       id: '/_authenticated/prs'
       path: '/prs'
@@ -175,21 +214,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/achievements': {
+      id: '/_authenticated/achievements'
+      path: '/achievements'
+      fullPath: '/achievements'
+      preLoaderRoute: typeof AuthenticatedAchievementsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAchievementsRoute: typeof AuthenticatedAchievementsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
   AuthenticatedPrsRoute: typeof AuthenticatedPrsRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedWeightRoute: typeof AuthenticatedWeightRoute
   AuthenticatedWorkoutRoute: typeof AuthenticatedWorkoutRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAchievementsRoute: AuthenticatedAchievementsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
   AuthenticatedPrsRoute: AuthenticatedPrsRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedWeightRoute: AuthenticatedWeightRoute,
   AuthenticatedWorkoutRoute: AuthenticatedWorkoutRoute,
 }
@@ -205,13 +255,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

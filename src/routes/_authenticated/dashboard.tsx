@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { DAY_META, todayKey, todayIso, typeChipClass } from "@/lib/day-utils";
+import { DAY_META, todayKey, typeChipClass } from "@/lib/day-utils";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Flame, Dumbbell, TrendingUp, TrendingDown } from "lucide-react";
+import { Trophy, Flame, Dumbbell, TrendingUp, TrendingDown, Award } from "lucide-react";
+import { Heatmap } from "@/components/Heatmap";
+import { currentStreak, longestStreak, workoutDaysSet, buildHeatmap } from "@/lib/streak";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   ssr: false,
@@ -17,19 +19,21 @@ function Dashboard() {
   const { data } = useQuery({
     queryKey: ["dashboard"],
     queryFn: async () => {
-      const [prsRes, wRes, goalRes, logsRes, exRes] = await Promise.all([
+      const [prsRes, wRes, goalRes, logsRes, historyRes, achRes] = await Promise.all([
         supabase.from("personal_records").select("*, exercises(name)").order("date", { ascending: false }).limit(3),
         supabase.from("body_weight_logs").select("*").order("date", { ascending: false }).limit(30),
         supabase.from("goals").select("*").eq("active", true).order("created_at", { ascending: false }).limit(1).maybeSingle(),
         supabase.from("workout_logs").select("date, completed").eq("completed", true),
-        supabase.from("exercises").select("id, day"),
+        supabase.from("pr_history").select("date"),
+        supabase.from("achievements").select("badge_type").order("unlocked_at", { ascending: false }).limit(4),
       ]);
       return {
         prs: prsRes.data ?? [],
         weights: wRes.data ?? [],
         goal: goalRes.data,
         logs: logsRes.data ?? [],
-        exercises: exRes.data ?? [],
+        prHistory: historyRes.data ?? [],
+        achievements: achRes.data ?? [],
       };
     },
   });
@@ -43,29 +47,11 @@ function Dashboard() {
     return total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
   })();
 
-  // streak: consecutive days (excluding Sunday) where all that day's exercises are completed
-  const streak = (() => {
-    if (!data) return 0;
-    const byDay: Record<string, number> = {};
-    data.exercises.forEach(e => { byDay[e.day] = (byDay[e.day] ?? 0) + 1; });
-    const doneByDate: Record<string, number> = {};
-    data.logs.forEach(l => { doneByDate[l.date] = (doneByDate[l.date] ?? 0) + 1; });
-    let count = 0;
-    for (let i = 0; i < 60; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const iso = d.toISOString().slice(0, 10);
-      const dow = d.getDay();
-      if (dow === 0) continue; // skip Sunday
-      const key = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"][dow];
-      const need = byDay[key] ?? 0;
-      const got = doneByDate[iso] ?? 0;
-      if (need > 0 && got >= need) count++;
-      else if (i === 0) continue; // today not done yet — don't break
-      else break;
-    }
-    return count;
-  })();
+  const daySet = workoutDaysSet((data?.logs ?? []).map(l => ({ date: l.date, completed: !!l.completed })));
+  const prDaySet = new Set((data?.prHistory ?? []).map(p => p.date));
+  const streak = currentStreak(daySet);
+  const best = longestStreak(daySet);
+  const heatmapCells = buildHeatmap(daySet, prDaySet, 365);
 
   const weekChange = (() => {
     if (!data?.weights?.length || data.weights.length < 2) return null;
@@ -87,6 +73,23 @@ function Dashboard() {
         <h1 className="text-3xl font-bold mt-1">Let's train.</h1>
       </div>
 
+      {/* Streak hero */}
+      {streak > 0 && (
+        <div className="card-elevated p-4 flex items-center justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Current streak</p>
+            <p className="text-2xl font-bold mt-0.5 flex items-center gap-1.5">
+              <Flame className="size-6 text-legs" />
+              {streak} day{streak === 1 ? "" : "s"}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Longest</p>
+            <p className="text-lg font-mono font-bold">{best}</p>
+          </div>
+        </div>
+      )}
+
       {/* Today's workout card */}
       <Link to="/workout" className="block group">
         <div className={`rounded-2xl p-5 ${typeChipClass(meta.type)} relative overflow-hidden`}>
@@ -101,19 +104,28 @@ function Dashboard() {
         </div>
       </Link>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="card-elevated p-4">
-          <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
-            <Flame className="size-4" /> STREAK
-          </div>
-          <p className="text-3xl font-bold mt-2">{streak}<span className="text-base font-normal text-muted-foreground ml-1">days</span></p>
+      {/* Heatmap */}
+      <div className="card-elevated p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold">Last 12 months</h3>
+          <span className="text-xs text-muted-foreground">{daySet.size} workouts</span>
         </div>
+        <Heatmap cells={heatmapCells} />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
         <div className="card-elevated p-4">
           <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
             <Dumbbell className="size-4" /> PRs
           </div>
           <p className="text-3xl font-bold mt-2">{data?.prs?.length ?? 0}<span className="text-base font-normal text-muted-foreground ml-1">recent</span></p>
         </div>
+        <Link to="/achievements" className="card-elevated p-4 block hover:opacity-90 transition">
+          <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
+            <Award className="size-4" /> BADGES
+          </div>
+          <p className="text-3xl font-bold mt-2">{data?.achievements?.length ?? 0}<span className="text-base font-normal text-muted-foreground ml-1">unlocked</span></p>
+        </Link>
       </div>
 
       {/* Goal / Weight */}
