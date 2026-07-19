@@ -5,9 +5,10 @@ import { DAYS, DAY_META, todayKey, todayIso, typeChipClass, type DayKey } from "
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Trophy, Moon } from "lucide-react";
+import { Trophy, Moon, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { checkAndAwardBadges } from "@/lib/badges";
+import { ManageExercises } from "@/components/ManageExercises";
 
 
 
