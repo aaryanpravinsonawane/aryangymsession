@@ -29,6 +29,7 @@ const QUOTES: Record<DayKey, string> = {
 
 function WorkoutPage() {
   const [day, setDay] = useState<DayKey>(todayKey());
+  const [manageOpen, setManageOpen] = useState(false);
   const meta = DAY_META[day];
   const date = todayIso();
   const qc = useQueryClient();
