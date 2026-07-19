@@ -135,11 +135,26 @@ function WorkoutPage() {
 
       {/* Header */}
       <div>
-        <p className={`text-xs uppercase tracking-widest font-semibold ${meta.type === "push" ? "text-push" : meta.type === "pull" ? "text-pull" : meta.type === "legs" ? "text-legs" : "text-rest"}`}>{meta.label}</p>
-        <h1 className="text-2xl font-bold mt-0.5">{meta.title}</h1>
-        <p className="text-sm text-muted-foreground">{meta.subtitle}</p>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className={`text-xs uppercase tracking-widest font-semibold ${meta.type === "push" ? "text-push" : meta.type === "pull" ? "text-pull" : meta.type === "legs" ? "text-legs" : "text-rest"}`}>{meta.label}</p>
+            <h1 className="text-2xl font-bold mt-0.5">{meta.title}</h1>
+            <p className="text-sm text-muted-foreground">{meta.subtitle}</p>
+          </div>
+          {meta.type !== "rest" && (
+            <button
+              onClick={() => setManageOpen(true)}
+              className="shrink-0 inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-secondary text-secondary-foreground text-xs font-semibold hover:opacity-90"
+            >
+              <Settings2 className="size-4" /> Manage
+            </button>
+          )}
+        </div>
         <blockquote className="mt-3 text-sm italic text-muted-foreground border-l-2 border-border pl-3">"{QUOTES[day]}"</blockquote>
       </div>
+
+      <ManageExercises day={day} open={manageOpen} onOpenChange={setManageOpen} />
+
 
       {meta.type === "rest" ? (
         <div className="card-elevated p-8 text-center">
