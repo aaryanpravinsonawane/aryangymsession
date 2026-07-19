@@ -95,6 +95,28 @@ function WorkoutPage() {
       }
       return { pr: false, userId: user.id };
     },
+    onMutate: async (v) => {
+      const key = ["workout", day, date];
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData<any>(key);
+      if (prev) {
+        const existing = prev.logs[v.exercise_id];
+        const next = {
+          ...prev,
+          logs: {
+            ...prev.logs,
+            [v.exercise_id]: {
+              ...(existing ?? { exercise_id: v.exercise_id, date }),
+              weight: v.weight ?? existing?.weight ?? null,
+              reps: v.reps ?? existing?.reps ?? null,
+              completed: v.completed ?? existing?.completed ?? false,
+            },
+          },
+        };
+        qc.setQueryData(key, next);
+      }
+      return { prev };
+    },
     onSuccess: async (r) => {
       qc.invalidateQueries({ queryKey: ["workout", day, date] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
@@ -110,7 +132,11 @@ function WorkoutPage() {
         console.error("Badge check failed", e);
       }
     },
-    onError: (e) => toast.error((e as Error).message),
+    onError: (e, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(["workout", day, date], ctx.prev);
+      toast.error((e as Error).message);
+    },
+
   });
 
 
