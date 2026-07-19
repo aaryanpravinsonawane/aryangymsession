@@ -42,11 +42,14 @@ export function ManageExercises({ day, open, onOpenChange }: { day: DayKey; open
   const create = useMutation({
     mutationFn: async (v: { name: string; scheme: string; muscle_group: string }) => {
       const nextIdx = (exercises[exercises.length - 1]?.order_index ?? -1) + 1;
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) throw new Error("Not signed in");
       const { error } = await supabase.from("exercises").insert({
-        day, name: v.name, scheme: v.scheme, muscle_group: v.muscle_group || null, order_index: nextIdx,
+        user_id: user.id, day, name: v.name, scheme: v.scheme, muscle_group: v.muscle_group || null, order_index: nextIdx,
       });
       if (error) throw error;
     },
+
     onSuccess: () => { invalidate(); setAdding(false); toast.success("Exercise added"); },
     onError: (e) => toast.error((e as Error).message),
   });

@@ -74,6 +74,7 @@ export type Database = {
           name: string
           order_index: number
           scheme: string
+          user_id: string
         }
         Insert: {
           created_at?: string
@@ -83,6 +84,7 @@ export type Database = {
           name: string
           order_index?: number
           scheme: string
+          user_id: string
         }
         Update: {
           created_at?: string
@@ -92,6 +94,7 @@ export type Database = {
           name?: string
           order_index?: number
           scheme?: string
+          user_id?: string
         }
         Relationships: []
       }
