@@ -12,9 +12,11 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+type Mode = "login" | "signup" | "reset";
+
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -36,11 +38,18 @@ function AuthPage() {
         });
         if (error) throw error;
         toast.success("Account created — you're in.");
-      } else {
+        navigate({ to: "/dashboard" });
+      } else if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        navigate({ to: "/dashboard" });
+      } else {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast.success("Reset link sent — check your email.");
       }
-      navigate({ to: "/dashboard" });
     } catch (err) {
       toast.error((err as Error).message);
     } finally {
@@ -64,16 +73,35 @@ function AuthPage() {
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" required value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" required minLength={6} value={password} onChange={e => setPassword(e.target.value)} autoComplete={mode === "signup" ? "new-password" : "current-password"} />
-          </div>
+          {mode !== "reset" && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                {mode === "login" && (
+                  <button
+                    type="button"
+                    onClick={() => setMode("reset")}
+                    className="text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
+              <Input id="password" type="password" required minLength={6} value={password} onChange={e => setPassword(e.target.value)} autoComplete={mode === "signup" ? "new-password" : "current-password"} />
+            </div>
+          )}
           <Button type="submit" disabled={loading} className="w-full h-11 text-base font-semibold">
-            {loading ? "…" : mode === "login" ? "Sign in" : "Create account"}
+            {loading ? "…" : mode === "login" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link"}
           </Button>
-          <button type="button" onClick={() => setMode(mode === "login" ? "signup" : "login")} className="w-full text-sm text-muted-foreground hover:text-foreground">
-            {mode === "login" ? "Need an account? Sign up" : "Have an account? Sign in"}
-          </button>
+          {mode === "reset" ? (
+            <button type="button" onClick={() => setMode("login")} className="w-full text-sm text-muted-foreground hover:text-foreground">
+              Back to sign in
+            </button>
+          ) : (
+            <button type="button" onClick={() => setMode(mode === "login" ? "signup" : "login")} className="w-full text-sm text-muted-foreground hover:text-foreground">
+              {mode === "login" ? "Need an account? Sign up" : "Have an account? Sign in"}
+            </button>
+          )}
         </form>
       </div>
     </div>
