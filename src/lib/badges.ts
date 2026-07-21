@@ -57,17 +57,19 @@ export type BadgeCheckContext = {
 
 /** Check all badges and insert any new unlocks. Returns newly unlocked badge defs. */
 export async function checkAndAwardBadges(ctx: BadgeCheckContext): Promise<BadgeDef[]> {
-  const [{ data: existing }, { data: logs }, { data: prs }, { data: exs }] = await Promise.all([
+  const [{ data: existing }, { data: logs }, { data: prs }, { data: exs }, { data: gs }] = await Promise.all([
     supabase.from("achievements").select("badge_type").eq("user_id", ctx.userId),
     supabase.from("workout_logs").select("date, completed, weight, exercise_id").eq("user_id", ctx.userId),
     supabase.from("personal_records").select("weight, exercise_id").eq("user_id", ctx.userId),
     supabase.from("exercises").select("id, name"),
+    supabase.from("general_sessions").select("date").eq("user_id", ctx.userId),
   ]);
   const owned = new Set((existing ?? []).map(r => r.badge_type));
   const toUnlock: string[] = [];
 
-  // Streak
+  // Streak — union workout logs with free-form general sessions
   const daySet = workoutDaysSet((logs ?? []).map(l => ({ date: l.date, completed: !!l.completed })));
+  for (const g of gs ?? []) daySet.add(g.date);
   const streak = currentStreak(daySet);
   if (streak >= 7   && !owned.has("streak_7"))   toUnlock.push("streak_7");
   if (streak >= 30  && !owned.has("streak_30"))  toUnlock.push("streak_30");
