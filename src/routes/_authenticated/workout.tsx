@@ -9,6 +9,8 @@ import { Trophy, Moon, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { checkAndAwardBadges } from "@/lib/badges";
 import { ManageExercises } from "@/components/ManageExercises";
+import { GeneralSessionSheet } from "@/components/GeneralSessionSheet";
+import { Sparkles } from "lucide-react";
 
 
 
@@ -30,6 +32,7 @@ const QUOTES: Record<DayKey, string> = {
 function WorkoutPage() {
   const [day, setDay] = useState<DayKey>(todayKey());
   const [manageOpen, setManageOpen] = useState(false);
+  const [generalOpen, setGeneralOpen] = useState(false);
   const meta = DAY_META[day];
   const date = todayIso();
   const qc = useQueryClient();
