@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DAY_META, todayKey, typeChipClass } from "@/lib/day-utils";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Flame, Dumbbell, TrendingUp, TrendingDown, Award } from "lucide-react";
+import { Trophy, Flame, Dumbbell, TrendingUp, TrendingDown, Award, Sparkles } from "lucide-react";
 import { Heatmap } from "@/components/Heatmap";
 import { currentStreak, longestStreak, workoutDaysSet, buildHeatmap } from "@/lib/streak";
 
@@ -19,13 +19,14 @@ function Dashboard() {
   const { data } = useQuery({
     queryKey: ["dashboard"],
     queryFn: async () => {
-      const [prsRes, wRes, goalRes, logsRes, historyRes, achRes] = await Promise.all([
+      const [prsRes, wRes, goalRes, logsRes, historyRes, achRes, gsRes] = await Promise.all([
         supabase.from("personal_records").select("*, exercises(name)").order("date", { ascending: false }).limit(3),
         supabase.from("body_weight_logs").select("*").order("date", { ascending: false }).limit(30),
         supabase.from("goals").select("*").eq("active", true).order("created_at", { ascending: false }).limit(1).maybeSingle(),
         supabase.from("workout_logs").select("date, completed").eq("completed", true),
         supabase.from("pr_history").select("date"),
         supabase.from("achievements").select("badge_type").order("unlocked_at", { ascending: false }).limit(4),
+        supabase.from("general_sessions").select("*").order("date", { ascending: false }).limit(50),
       ]);
       return {
         prs: prsRes.data ?? [],
@@ -34,6 +35,7 @@ function Dashboard() {
         logs: logsRes.data ?? [],
         prHistory: historyRes.data ?? [],
         achievements: achRes.data ?? [],
+        generalSessions: gsRes.data ?? [],
       };
     },
   });
@@ -48,6 +50,8 @@ function Dashboard() {
   })();
 
   const daySet = workoutDaysSet((data?.logs ?? []).map(l => ({ date: l.date, completed: !!l.completed })));
+  // General sessions also count as "trained" days for streak & heatmap purposes.
+  for (const gs of data?.generalSessions ?? []) daySet.add(gs.date);
   const prDaySet = new Set((data?.prHistory ?? []).map(p => p.date));
   const streak = currentStreak(daySet);
   const best = longestStreak(daySet);
@@ -169,6 +173,27 @@ function Dashboard() {
           )) : <p className="text-sm text-muted-foreground py-2">No PRs yet — log some sets to get started.</p>}
         </div>
       </div>
+
+      {/* Recent general sessions */}
+      {data?.generalSessions?.length ? (
+        <div className="card-elevated p-5">
+          <h3 className="font-semibold flex items-center gap-2"><Sparkles className="size-4 text-pull" /> General sessions</h3>
+          <div className="mt-3 divide-y divide-border">
+            {data.generalSessions.slice(0, 5).map((gs: any) => (
+              <div key={gs.id} className="py-2.5 flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{gs.note || "General session"}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {new Date(gs.date + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                    {gs.duration_minutes ? ` · ${gs.duration_minutes} min` : ""}
+                    {gs.intensity ? ` · ${gs.intensity}` : ""}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
