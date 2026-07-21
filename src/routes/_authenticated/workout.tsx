@@ -180,9 +180,16 @@ function WorkoutPage() {
           )}
         </div>
         <blockquote className="mt-3 text-sm italic text-muted-foreground border-l-2 border-border pl-3">"{QUOTES[day]}"</blockquote>
+        <button
+          onClick={() => setGeneralOpen(true)}
+          className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+        >
+          <Sparkles className="size-3.5" /> Log general session instead
+        </button>
       </div>
 
       <ManageExercises day={day} open={manageOpen} onOpenChange={setManageOpen} />
+      <GeneralSessionSheet open={generalOpen} onOpenChange={setGeneralOpen} />
 
 
       {meta.type === "rest" ? (
