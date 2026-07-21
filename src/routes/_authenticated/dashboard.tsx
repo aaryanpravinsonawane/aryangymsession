@@ -173,6 +173,27 @@ function Dashboard() {
           )) : <p className="text-sm text-muted-foreground py-2">No PRs yet — log some sets to get started.</p>}
         </div>
       </div>
+
+      {/* Recent general sessions */}
+      {data?.generalSessions?.length ? (
+        <div className="card-elevated p-5">
+          <h3 className="font-semibold flex items-center gap-2"><Sparkles className="size-4 text-pull" /> General sessions</h3>
+          <div className="mt-3 divide-y divide-border">
+            {data.generalSessions.slice(0, 5).map((gs: any) => (
+              <div key={gs.id} className="py-2.5 flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{gs.note || "General session"}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {new Date(gs.date + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                    {gs.duration_minutes ? ` · ${gs.duration_minutes} min` : ""}
+                    {gs.intensity ? ` · ${gs.intensity}` : ""}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
