@@ -65,6 +65,41 @@ export type Database = {
         }
         Relationships: []
       }
+      diet_logs: {
+        Row: {
+          created_at: string
+          date: string
+          food_id: string
+          id: string
+          quantity: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          food_id: string
+          id?: string
+          quantity?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          food_id?: string
+          id?: string
+          quantity?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diet_logs_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercises: {
         Row: {
           created_at: string
@@ -95,6 +130,45 @@ export type Database = {
           order_index?: number
           scheme?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      foods: {
+        Row: {
+          calories: number
+          carbs_g: number
+          category: string
+          created_at: string
+          fat_g: number
+          fiber_g: number
+          id: string
+          name: string
+          protein_g: number
+          serving_label: string
+        }
+        Insert: {
+          calories?: number
+          carbs_g?: number
+          category: string
+          created_at?: string
+          fat_g?: number
+          fiber_g?: number
+          id?: string
+          name: string
+          protein_g?: number
+          serving_label: string
+        }
+        Update: {
+          calories?: number
+          carbs_g?: number
+          category?: string
+          created_at?: string
+          fat_g?: number
+          fiber_g?: number
+          id?: string
+          name?: string
+          protein_g?: number
+          serving_label?: string
         }
         Relationships: []
       }
