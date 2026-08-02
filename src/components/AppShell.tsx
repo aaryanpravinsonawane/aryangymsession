@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Home, Dumbbell, Trophy, Scale, Target, LogOut, Award, Settings } from "lucide-react";
+import { Home, Dumbbell, Trophy, Scale, Target, LogOut, Award, Settings, Utensils } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
@@ -9,9 +9,11 @@ const NAV = [
   { to: "/workout",      label: "Workout", icon: Dumbbell },
   { to: "/prs",          label: "PRs",     icon: Trophy },
   { to: "/achievements", label: "Badges",  icon: Award },
+  { to: "/diet",         label: "Diet",    icon: Utensils },
   { to: "/weight",       label: "Weight",  icon: Scale },
   { to: "/goals",        label: "Goals",   icon: Target },
 ] as const;
+
 
 export function AppShell({ children }: { children: ReactNode }) {
   const loc = useLocation();
