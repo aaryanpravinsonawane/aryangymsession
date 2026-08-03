@@ -13,6 +13,34 @@ const WELCOME: ChatMessage = {
   content: "Hey! I'm Gym Buddy 💪 Ask me anything about your workouts, form, recovery, or nutrition.",
 };
 
+function Markdown({ children }: { children: string }) {
+  return (
+    <ReactMarkdown
+      components={{
+        h1: ({ node: _node, ...props }) => (
+          <h1 className="text-base font-semibold text-foreground mt-3 mb-1.5 normal-case" {...props} />
+        ),
+        h2: ({ node: _node, ...props }) => (
+          <h2 className="text-base font-semibold text-foreground mt-3 mb-1.5 normal-case" {...props} />
+        ),
+        strong: ({ node: _node, ...props }) => <strong className="font-bold text-foreground" {...props} />,
+        p: ({ node: _node, ...props }) => (
+          <p className="text-sm leading-relaxed text-foreground mb-2 last:mb-0" {...props} />
+        ),
+        ul: ({ node: _node, ...props }) => (
+          <ul className="list-disc pl-4 space-y-1.5 mb-2 last:mb-0" {...props} />
+        ),
+        ol: ({ node: _node, ...props }) => (
+          <ol className="list-decimal pl-4 space-y-1.5 mb-2 last:mb-0" {...props} />
+        ),
+        li: ({ node: _node, ...props }) => <li className="text-sm leading-relaxed text-foreground" {...props} />,
+      }}
+    >
+      {children}
+    </ReactMarkdown>
+  );
+}
+
 export function GymBuddy() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME]);
