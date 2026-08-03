@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Home, Dumbbell, Trophy, Scale, Target, LogOut, Award, Settings, Utensils } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { GymBuddy } from "@/components/GymBuddy";
 import type { ReactNode } from "react";
 
 const NAV = [
