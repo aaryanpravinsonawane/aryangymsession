@@ -50,6 +50,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <main className="flex-1 mx-auto w-full max-w-2xl px-4 pt-4 pb-28">{children}</main>
 
+      <GymBuddy />
+
       <nav className="fixed bottom-0 inset-x-0 z-30 border-t border-border bg-background/95 backdrop-blur-lg pb-[env(safe-area-inset-bottom)]">
         <div className="mx-auto max-w-2xl grid grid-cols-7">
           {NAV.map(({ to, label, icon: Icon }) => {
