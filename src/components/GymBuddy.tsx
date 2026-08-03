@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { MessageCircleMore, Send } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import ReactMarkdown from "react-markdown";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -9,8 +16,47 @@ type ChatMessage = { role: "user" | "assistant"; content: string };
 
 const WELCOME: ChatMessage = {
   role: "assistant",
-  content: "Hey! I'm Gym Buddy 💪 Ask me anything about your workouts, form, recovery, or nutrition.",
+  content:
+    "Hey! I'm Gym Buddy 💪 Ask me anything about your workouts, form, recovery, or nutrition.",
 };
+
+function Markdown({ children }: { children: string }) {
+  return (
+    <ReactMarkdown
+      components={{
+        h1: ({ node: _node, ...props }) => (
+          <h1
+            className="text-base font-semibold text-foreground mt-3 mb-1.5 normal-case"
+            {...props}
+          />
+        ),
+        h2: ({ node: _node, ...props }) => (
+          <h2
+            className="text-base font-semibold text-foreground mt-3 mb-1.5 normal-case"
+            {...props}
+          />
+        ),
+        strong: ({ node: _node, ...props }) => (
+          <strong className="font-bold text-foreground" {...props} />
+        ),
+        p: ({ node: _node, ...props }) => (
+          <p className="text-sm leading-relaxed text-foreground mb-2 last:mb-0" {...props} />
+        ),
+        ul: ({ node: _node, ...props }) => (
+          <ul className="list-disc pl-4 space-y-1.5 mb-2 last:mb-0" {...props} />
+        ),
+        ol: ({ node: _node, ...props }) => (
+          <ol className="list-decimal pl-4 space-y-1.5 mb-2 last:mb-0" {...props} />
+        ),
+        li: ({ node: _node, ...props }) => (
+          <li className="text-sm leading-relaxed text-foreground" {...props} />
+        ),
+      }}
+    >
+      {children}
+    </ReactMarkdown>
+  );
+}
 
 export function GymBuddy() {
   const [open, setOpen] = useState(false);
@@ -26,14 +72,18 @@ export function GymBuddy() {
         body: JSON.stringify({ messages: history.filter((m) => m !== WELCOME) }),
       });
       const data = (await res.json()) as { reply?: string; error?: string };
-      if (!res.ok || !data.reply) throw new Error(data.error ?? "Gym Buddy is having trouble responding, try again.");
+      if (!res.ok || !data.reply)
+        throw new Error(data.error ?? "Gym Buddy is having trouble responding, try again.");
       return data.reply;
     },
     onSuccess: (reply) => setMessages((prev) => [...prev, { role: "assistant", content: reply }]),
     onError: (e) =>
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: (e as Error).message || "Gym Buddy is having trouble responding, try again." },
+        {
+          role: "assistant",
+          content: (e as Error).message || "Gym Buddy is having trouble responding, try again.",
+        },
       ]),
   });
 
@@ -70,15 +120,18 @@ export function GymBuddy() {
 
           <div ref={scrollRef} className="flex-1 overflow-y-auto mt-4 space-y-3 pr-1">
             {messages.map((m, i) => (
-              <div key={i} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}>
+              <div
+                key={i}
+                className={m.role === "user" ? "flex justify-end" : "flex justify-start"}
+              >
                 <div
-                  className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
+                  className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
                     m.role === "user"
-                      ? "bg-primary text-primary-foreground rounded-br-sm"
+                      ? "bg-primary text-primary-foreground rounded-br-sm whitespace-pre-wrap"
                       : "card-elevated rounded-bl-sm"
                   }`}
                 >
-                  {m.content}
+                  {m.role === "user" ? m.content : <Markdown>{m.content}</Markdown>}
                 </div>
               </div>
             ))}
@@ -97,14 +150,22 @@ export function GymBuddy() {
             )}
           </div>
 
-          <form onSubmit={send} className="mt-3 flex items-center gap-2 pb-[env(safe-area-inset-bottom)]">
+          <form
+            onSubmit={send}
+            className="mt-3 flex items-center gap-2 pb-[env(safe-area-inset-bottom)]"
+          >
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about form, macros, recovery…"
               disabled={ask.isPending}
             />
-            <Button type="submit" size="icon" disabled={ask.isPending || !input.trim()} aria-label="Send">
+            <Button
+              type="submit"
+              size="icon"
+              disabled={ask.isPending || !input.trim()}
+              aria-label="Send"
+            >
               <Send className="size-4" />
             </Button>
           </form>
