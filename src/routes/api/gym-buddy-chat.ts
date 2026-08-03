@@ -64,10 +64,11 @@ export const Route = createFileRoute("/api/gym-buddy-chat")({
           const raw = await res.text();
           if (!res.ok) {
             console.error(`Gemini request failed [${res.status}]: ${raw}`);
-            return Response.json(
-              { error: `Gym Buddy could not reach the AI service (${res.status}).` },
-              { status: 502 },
-            );
+            const detail =
+              res.status === 429
+                ? "the Gemini API key has no remaining quota for gemini-2.0-flash — check your Google AI Studio plan/billing"
+                : `AI service error ${res.status}`;
+            return Response.json({ error: `Gym Buddy can't answer right now: ${detail}.` }, { status: 502 });
           }
 
           const data = JSON.parse(raw) as {
