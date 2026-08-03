@@ -22,12 +22,9 @@ export const Route = createFileRoute("/api/gym-buddy-chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apiKey = process.env["GEMINI_API_KEY"];
+        const apiKey = process.env["LOVABLE_API_KEY"];
         if (!apiKey) {
-          return Response.json(
-            { error: "GEMINI_API_KEY is not configured. Add the GEMINI_API_KEY secret to enable Gym Buddy." },
-            { status: 500 },
-          );
+          return Response.json({ error: "AI is not configured for this app yet." }, { status: 200 });
         }
 
         let body: { messages?: unknown };
@@ -42,49 +39,48 @@ export const Route = createFileRoute("/api/gym-buddy-chat")({
           return Response.json({ error: "messages must be a non-empty array of {role, content}." }, { status: 400 });
         }
 
-        const trimmed = messages.slice(-20).map((m) => ({
-          role: m.role === "assistant" ? "model" : "user",
-          parts: [{ text: m.content.slice(0, 4000) }],
-        }));
+        const trimmed = messages
+          .slice(-20)
+          .map((m) => ({ role: m.role, content: m.content.slice(0, 4000) }));
 
         try {
-          const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                contents: trimmed,
-                systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
-                generationConfig: { temperature: 0.7, maxOutputTokens: 800 },
-              }),
+          const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Lovable-API-Key": apiKey,
             },
-          );
+            body: JSON.stringify({
+              model: "google/gemini-3.6-flash",
+              messages: [{ role: "system", content: SYSTEM_INSTRUCTION }, ...trimmed],
+            }),
+          });
 
           const raw = await res.text();
           if (!res.ok) {
-            console.error(`Gemini request failed [${res.status}]: ${raw}`);
+            console.error(`Gym Buddy AI request failed [${res.status}]: ${raw}`);
             const detail =
               res.status === 429
-                ? "the Gemini API key has no remaining quota for gemini-2.0-flash — check your Google AI Studio plan/billing"
-                : `AI service error ${res.status}`;
-            return Response.json({ error: `Gym Buddy can't answer right now: ${detail}.` }, { status: 502 });
+                ? "too many requests right now — try again in a moment"
+                : res.status === 402
+                  ? "the workspace is out of AI credits"
+                  : `AI service error ${res.status}`;
+            return Response.json({ error: `Gym Buddy can't answer right now: ${detail}.` }, { status: 200 });
           }
 
           const data = JSON.parse(raw) as {
-            candidates?: { content?: { parts?: { text?: string }[] } }[];
+            choices?: { message?: { content?: string } }[];
           };
-          const reply =
-            data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("").trim() ?? "";
+          const reply = data.choices?.[0]?.message?.content?.trim() ?? "";
 
           if (!reply) {
-            return Response.json({ error: "Gym Buddy had nothing to say — try rephrasing." }, { status: 502 });
+            return Response.json({ error: "Gym Buddy had nothing to say — try rephrasing." }, { status: 200 });
           }
 
           return Response.json({ reply });
         } catch (err) {
           console.error("Gym Buddy chat error:", err);
-          return Response.json({ error: "Gym Buddy is having trouble responding, try again." }, { status: 500 });
+          return Response.json({ error: "Gym Buddy is having trouble responding, try again." }, { status: 200 });
         }
       },
     },
