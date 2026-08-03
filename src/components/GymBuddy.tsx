@@ -101,13 +101,13 @@ export function GymBuddy() {
             {messages.map((m, i) => (
               <div key={i} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}>
                 <div
-                  className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
+                  className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
                     m.role === "user"
-                      ? "bg-primary text-primary-foreground rounded-br-sm"
+                      ? "bg-primary text-primary-foreground rounded-br-sm whitespace-pre-wrap"
                       : "card-elevated rounded-bl-sm"
                   }`}
                 >
-                  {m.content}
+                  {m.role === "user" ? m.content : <Markdown>{m.content}</Markdown>}
                 </div>
               </div>
             ))}
