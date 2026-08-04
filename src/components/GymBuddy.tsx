@@ -173,11 +173,38 @@ export function GymBuddy() {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="bottom" className="rounded-t-2xl h-[85vh] flex flex-col">
           <SheetHeader className="text-left">
-            <SheetTitle>Gym Buddy</SheetTitle>
-            <SheetDescription>Your fitness Q&amp;A</SheetDescription>
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <SheetTitle>Gym Buddy</SheetTitle>
+                <SheetDescription>Your fitness Q&amp;A</SheetDescription>
+              </div>
+              <div className="flex items-center gap-2 pr-8">
+                {incognito && (
+                  <span className="text-[10px] font-semibold uppercase tracking-wide rounded-full px-2 py-1 bg-purple-500/15 text-purple-300">
+                    Incognito
+                  </span>
+                )}
+                <Button
+                  type="button"
+                  size="icon"
+                  variant={incognito ? "secondary" : "ghost"}
+                  onClick={toggleIncognito}
+                  aria-label={incognito ? "Turn off Incognito Mode" : "Turn on Incognito Mode"}
+                  aria-pressed={incognito}
+                >
+                  {incognito ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </Button>
+              </div>
+            </div>
           </SheetHeader>
 
-          <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-contain h-full mt-4 space-y-3 pr-1" style={{ overscrollBehavior: 'contain' }}>
+          <div
+            ref={scrollRef}
+            className={`flex-1 overflow-y-auto overscroll-contain h-full mt-4 space-y-3 pr-1 rounded-xl ${
+              incognito ? "bg-purple-500/5 px-2 py-2" : ""
+            }`}
+            style={{ overscrollBehavior: "contain" }}
+          >
             {messages.map((m, i) => (
               <div
                 key={i}
