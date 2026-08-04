@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { MessageCircleMore, Send } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { MessageCircleMore, Send, EyeOff, Eye } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Sheet,
   SheetContent,
@@ -60,9 +61,51 @@ function Markdown({ children }: { children: string }) {
 
 export function GymBuddy() {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME]);
+  const [incognito, setIncognito] = useState(false);
+  const [incognitoMessages, setIncognitoMessages] = useState<ChatMessage[]>([WELCOME]);
+  const [localMessages, setLocalMessages] = useState<ChatMessage[] | null>(null);
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
+
+  const history = useQuery({
+    queryKey: ["gym-buddy-messages"],
+    enabled: open && !incognito,
+    queryFn: async (): Promise<ChatMessage[]> => {
+      const { data, error } = await supabase
+        .from("gym_buddy_messages")
+        .select("role, content")
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data ?? []).map((m) => ({
+        role: m.role === "user" ? "user" : "assistant",
+        content: m.content,
+      }));
+    },
+  });
+
+  const persisted = localMessages ?? history.data ?? [];
+  const messages = incognito
+    ? incognitoMessages
+    : persisted.length > 0
+      ? persisted
+      : [WELCOME];
+
+  const setMessages = (updater: (prev: ChatMessage[]) => ChatMessage[]) => {
+    if (incognito) setIncognitoMessages(updater);
+    else setLocalMessages((prev) => updater(prev ?? history.data ?? []));
+  };
+
+  const save = async (role: "user" | "assistant", content: string) => {
+    if (incognito) return;
+    const { data: auth } = await supabase.auth.getUser();
+    const userId = auth.user?.id;
+    if (!userId) return;
+    const { error } = await supabase
+      .from("gym_buddy_messages")
+      .insert({ user_id: userId, role, content });
+    if (error) console.error("Failed to save Gym Buddy message:", error.message);
+  };
 
   const ask = useMutation({
     mutationFn: async (history: ChatMessage[]) => {
@@ -76,7 +119,10 @@ export function GymBuddy() {
         throw new Error(data.error ?? "Gym Buddy is having trouble responding, try again.");
       return data.reply;
     },
-    onSuccess: (reply) => setMessages((prev) => [...prev, { role: "assistant", content: reply }]),
+    onSuccess: (reply) => {
+      setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
+      void save("assistant", reply);
+    },
     onError: (e) =>
       setMessages((prev) => [
         ...prev,
@@ -91,13 +137,26 @@ export function GymBuddy() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, ask.isPending]);
 
+  const toggleIncognito = () => {
+    if (incognito) {
+      setIncognitoMessages([WELCOME]);
+      setIncognito(false);
+      setLocalMessages(null);
+      void queryClient.invalidateQueries({ queryKey: ["gym-buddy-messages"] });
+    } else {
+      setIncognitoMessages([WELCOME]);
+      setIncognito(true);
+    }
+  };
+
   const send = (e: React.FormEvent) => {
     e.preventDefault();
     const text = input.trim();
     if (!text || ask.isPending) return;
     const next = [...messages, { role: "user" as const, content: text }];
-    setMessages(next);
+    setMessages(() => next);
     setInput("");
+    void save("user", text);
     ask.mutate(next);
   };
 
@@ -114,11 +173,38 @@ export function GymBuddy() {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="bottom" className="rounded-t-2xl h-[85vh] flex flex-col">
           <SheetHeader className="text-left">
-            <SheetTitle>Gym Buddy</SheetTitle>
-            <SheetDescription>Your fitness Q&amp;A</SheetDescription>
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <SheetTitle>Gym Buddy</SheetTitle>
+                <SheetDescription>Your fitness Q&amp;A</SheetDescription>
+              </div>
+              <div className="flex items-center gap-2 pr-8">
+                {incognito && (
+                  <span className="text-[10px] font-semibold uppercase tracking-wide rounded-full px-2 py-1 bg-purple-500/15 text-purple-300">
+                    Incognito
+                  </span>
+                )}
+                <Button
+                  type="button"
+                  size="icon"
+                  variant={incognito ? "secondary" : "ghost"}
+                  onClick={toggleIncognito}
+                  aria-label={incognito ? "Turn off Incognito Mode" : "Turn on Incognito Mode"}
+                  aria-pressed={incognito}
+                >
+                  {incognito ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </Button>
+              </div>
+            </div>
           </SheetHeader>
 
-          <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-contain h-full mt-4 space-y-3 pr-1" style={{ overscrollBehavior: 'contain' }}>
+          <div
+            ref={scrollRef}
+            className={`flex-1 overflow-y-auto overscroll-contain h-full mt-4 space-y-3 pr-1 rounded-xl ${
+              incognito ? "bg-purple-500/5 px-2 py-2" : ""
+            }`}
+            style={{ overscrollBehavior: "contain" }}
+          >
             {messages.map((m, i) => (
               <div
                 key={i}
