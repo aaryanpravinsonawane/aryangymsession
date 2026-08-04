@@ -61,9 +61,51 @@ function Markdown({ children }: { children: string }) {
 
 export function GymBuddy() {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME]);
+  const [incognito, setIncognito] = useState(false);
+  const [incognitoMessages, setIncognitoMessages] = useState<ChatMessage[]>([WELCOME]);
+  const [localMessages, setLocalMessages] = useState<ChatMessage[] | null>(null);
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
+
+  const history = useQuery({
+    queryKey: ["gym-buddy-messages"],
+    enabled: open && !incognito,
+    queryFn: async (): Promise<ChatMessage[]> => {
+      const { data, error } = await supabase
+        .from("gym_buddy_messages")
+        .select("role, content")
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data ?? []).map((m) => ({
+        role: m.role === "user" ? "user" : "assistant",
+        content: m.content,
+      }));
+    },
+  });
+
+  const persisted = localMessages ?? history.data ?? [];
+  const messages = incognito
+    ? incognitoMessages
+    : persisted.length > 0
+      ? persisted
+      : [WELCOME];
+
+  const setMessages = (updater: (prev: ChatMessage[]) => ChatMessage[]) => {
+    if (incognito) setIncognitoMessages(updater);
+    else setLocalMessages((prev) => updater(prev ?? history.data ?? []));
+  };
+
+  const save = async (role: "user" | "assistant", content: string) => {
+    if (incognito) return;
+    const { data: auth } = await supabase.auth.getUser();
+    const userId = auth.user?.id;
+    if (!userId) return;
+    const { error } = await supabase
+      .from("gym_buddy_messages")
+      .insert({ user_id: userId, role, content });
+    if (error) console.error("Failed to save Gym Buddy message:", error.message);
+  };
 
   const ask = useMutation({
     mutationFn: async (history: ChatMessage[]) => {
@@ -77,7 +119,10 @@ export function GymBuddy() {
         throw new Error(data.error ?? "Gym Buddy is having trouble responding, try again.");
       return data.reply;
     },
-    onSuccess: (reply) => setMessages((prev) => [...prev, { role: "assistant", content: reply }]),
+    onSuccess: (reply) => {
+      setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
+      void save("assistant", reply);
+    },
     onError: (e) =>
       setMessages((prev) => [
         ...prev,
@@ -92,13 +137,26 @@ export function GymBuddy() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, ask.isPending]);
 
+  const toggleIncognito = () => {
+    if (incognito) {
+      setIncognitoMessages([WELCOME]);
+      setIncognito(false);
+      setLocalMessages(null);
+      void queryClient.invalidateQueries({ queryKey: ["gym-buddy-messages"] });
+    } else {
+      setIncognitoMessages([WELCOME]);
+      setIncognito(true);
+    }
+  };
+
   const send = (e: React.FormEvent) => {
     e.preventDefault();
     const text = input.trim();
     if (!text || ask.isPending) return;
     const next = [...messages, { role: "user" as const, content: text }];
-    setMessages(next);
+    setMessages(() => next);
     setInput("");
+    void save("user", text);
     ask.mutate(next);
   };
 
