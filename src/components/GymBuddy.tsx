@@ -118,7 +118,7 @@ export function GymBuddy() {
             <SheetDescription>Your fitness Q&amp;A</SheetDescription>
           </SheetHeader>
 
-          <div ref={scrollRef} className="flex-1 overflow-y-auto mt-4 space-y-3 pr-1">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-contain h-full mt-4 space-y-3 pr-1">
             {messages.map((m, i) => (
               <div
                 key={i}
