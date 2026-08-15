@@ -1,8 +1,29 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { MessageCircleMore, Send, EyeOff, Eye } from "lucide-react";
+import { Send, EyeOff, Eye } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
+
+function RobotIcon({ className = "size-6" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <line x1="9" y1="3" x2="9" y2="6" />
+      <line x1="15" y1="3" x2="15" y2="6" />
+      <rect x="5" y="7" width="14" height="12" rx="4" ry="4" />
+      <circle cx="10" cy="12" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="14" cy="12" r="1.1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
 import {
   Sheet,
   SheetContent,
@@ -165,18 +186,33 @@ export function GymBuddy() {
       <button
         onClick={() => setOpen(true)}
         aria-label="Open Ask RN chat"
-        className="fixed right-4 bottom-24 z-40 size-14 rounded-full day-chip-push shadow-lg flex items-center justify-center active:scale-95 transition"
+        className="fixed right-4 bottom-24 z-40 size-14 rounded-full flex items-center justify-center active:scale-95 transition"
+        style={{
+          background: "linear-gradient(135deg, #6a5cf0, #8b7bf7)",
+          boxShadow: "0 0 28px -6px rgba(107, 92, 240, 0.55)",
+        }}
       >
-        <MessageCircleMore className="size-6" />
+        <RobotIcon className="size-7" />
       </button>
 
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="bottom" className="rounded-t-2xl h-[85vh] flex flex-col">
           <SheetHeader className="text-left">
             <div className="flex items-center justify-between gap-2">
-              <div>
-                <SheetTitle>Ask RN</SheetTitle>
-                <SheetDescription>Your fitness Q&amp;A</SheetDescription>
+              <div className="flex items-center gap-3">
+                <div
+                  className="size-[46px] rounded-[13px] flex items-center justify-center shrink-0"
+                  style={{
+                    background: "linear-gradient(135deg, #6a5cf0, #8b7bf7)",
+                    boxShadow: "0 0 24px -5px rgba(107, 92, 240, 0.5)",
+                  }}
+                >
+                  <RobotIcon className="size-6" />
+                </div>
+                <div>
+                  <SheetTitle>Ask RN</SheetTitle>
+                  <SheetDescription>Your fitness Q&amp;A</SheetDescription>
+                </div>
               </div>
               <div className="flex items-center gap-2 pr-8">
                 {incognito && (
