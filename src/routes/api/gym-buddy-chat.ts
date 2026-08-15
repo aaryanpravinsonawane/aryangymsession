@@ -1,4 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
+import {
+  buildUserDataSummary,
+  getAuthedSupabase,
+} from "@/lib/gym-buddy-context.server";
 
 const SYSTEM_INSTRUCTION =
   "You are Gym Buddy, a friendly, knowledgeable fitness assistant inside a Push/Pull/Legs workout tracking app called Lift Log Pro. Answer gym, workout, nutrition, recovery, and general fitness questions clearly and concisely. Keep answers short and practical unless the user asks for detail. If asked something totally unrelated to fitness/health, gently redirect back to fitness topics.";
@@ -43,6 +47,17 @@ export const Route = createFileRoute("/api/gym-buddy-chat")({
           .slice(-20)
           .map((m) => ({ role: m.role, content: m.content.slice(0, 4000) }));
 
+        let systemInstruction = SYSTEM_INSTRUCTION;
+        try {
+          const authed = await getAuthedSupabase(request.headers.get("authorization"));
+          if (authed) {
+            const summary = await buildUserDataSummary(authed.supabase, authed.userId);
+            if (summary) systemInstruction = `${summary}\n\n${SYSTEM_INSTRUCTION}`;
+          }
+        } catch (err) {
+          console.error("Ask RN context load failed:", err);
+        }
+
         try {
           const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
             method: "POST",
@@ -52,7 +67,7 @@ export const Route = createFileRoute("/api/gym-buddy-chat")({
             },
             body: JSON.stringify({
               model: "google/gemini-3.6-flash",
-              messages: [{ role: "system", content: SYSTEM_INSTRUCTION }, ...trimmed],
+              messages: [{ role: "system", content: systemInstruction }, ...trimmed],
             }),
           });
 

@@ -130,9 +130,14 @@ export function GymBuddy() {
 
   const ask = useMutation({
     mutationFn: async (history: ChatMessage[]) => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
       const res = await fetch("/api/gym-buddy-chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ messages: history.filter((m) => m !== WELCOME) }),
       });
       const data = (await res.json()) as { reply?: string; error?: string };
