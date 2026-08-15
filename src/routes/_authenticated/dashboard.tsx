@@ -50,12 +50,10 @@ function Dashboard() {
   })();
 
   const daySet = workoutDaysSet((data?.logs ?? []).map(l => ({ date: l.date, completed: !!l.completed })));
-  // General sessions also count as "trained" days for streak & heatmap purposes.
+  // General sessions also count as "trained" days for streak & calendar purposes.
   for (const gs of data?.generalSessions ?? []) daySet.add(gs.date);
-  const prDaySet = new Set((data?.prHistory ?? []).map(p => p.date));
   const streak = currentStreak(daySet);
   const best = longestStreak(daySet);
-  const heatmapCells = buildHeatmap(daySet, prDaySet, 365);
 
   const weekChange = (() => {
     if (!data?.weights?.length || data.weights.length < 2) return null;
@@ -108,13 +106,9 @@ function Dashboard() {
         </div>
       </Link>
 
-      {/* Heatmap */}
+      {/* Monthly attendance */}
       <div className="card-elevated p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold">Last 12 months</h3>
-          <span className="text-xs text-muted-foreground">{daySet.size} workouts</span>
-        </div>
-        <Heatmap cells={heatmapCells} />
+        <MonthlyAttendanceCalendar daySet={daySet} />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
