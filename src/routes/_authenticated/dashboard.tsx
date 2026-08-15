@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { DAY_META, todayKey, typeChipClass } from "@/lib/day-utils";
 import { Progress } from "@/components/ui/progress";
 import { Trophy, Flame, Dumbbell, TrendingUp, TrendingDown, Award, Sparkles } from "lucide-react";
-import { Heatmap } from "@/components/Heatmap";
-import { currentStreak, longestStreak, workoutDaysSet, buildHeatmap } from "@/lib/streak";
+import { MonthlyAttendanceCalendar } from "@/components/MonthlyAttendanceCalendar";
+import { currentStreak, longestStreak, workoutDaysSet } from "@/lib/streak";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   ssr: false,
