@@ -104,7 +104,7 @@ export function GymBuddy() {
     const { error } = await supabase
       .from("gym_buddy_messages")
       .insert({ user_id: userId, role, content });
-    if (error) console.error("Failed to save Gym Buddy message:", error.message);
+    if (error) console.error("Failed to save Ask RN message:", error.message);
   };
 
   const ask = useMutation({
@@ -116,7 +116,7 @@ export function GymBuddy() {
       });
       const data = (await res.json()) as { reply?: string; error?: string };
       if (!res.ok || !data.reply)
-        throw new Error(data.error ?? "Gym Buddy is having trouble responding, try again.");
+        throw new Error(data.error ?? "Ask RN is having trouble responding, try again.");
       return data.reply;
     },
     onSuccess: (reply) => {
@@ -128,7 +128,7 @@ export function GymBuddy() {
         ...prev,
         {
           role: "assistant",
-          content: (e as Error).message || "Gym Buddy is having trouble responding, try again.",
+          content: (e as Error).message || "Ask RN is having trouble responding, try again.",
         },
       ]),
   });
