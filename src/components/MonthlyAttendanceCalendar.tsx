@@ -119,7 +119,7 @@ export function MonthlyAttendanceCalendar({ daySet }: { daySet: Set<string> }) {
                     transition
                     ${isCurrent ? "text-foreground" : "text-muted-foreground/40"}
                     ${isSunday && isCurrent ? "bg-rest/10 text-rest" : ""}
-                    ${attended && isCurrent ? "bg-success/15 text-success-foreground" : ""}
+                    ${attended && isCurrent ? "bg-success/15 text-success" : ""}
                     ${isToday && !attended ? "ring-1 ring-primary" : ""}
                   `}
                 >
