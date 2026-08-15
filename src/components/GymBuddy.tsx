@@ -18,7 +18,7 @@ type ChatMessage = { role: "user" | "assistant"; content: string };
 const WELCOME: ChatMessage = {
   role: "assistant",
   content:
-    "Hey! I'm Gym Buddy 💪 Ask me anything about your workouts, form, recovery, or nutrition.",
+    "Hey! I'm Ask RN 💪 Ask me anything about your workouts, form, recovery, or nutrition.",
 };
 
 function Markdown({ children }: { children: string }) {
@@ -104,7 +104,7 @@ export function GymBuddy() {
     const { error } = await supabase
       .from("gym_buddy_messages")
       .insert({ user_id: userId, role, content });
-    if (error) console.error("Failed to save Gym Buddy message:", error.message);
+    if (error) console.error("Failed to save Ask RN message:", error.message);
   };
 
   const ask = useMutation({
@@ -116,7 +116,7 @@ export function GymBuddy() {
       });
       const data = (await res.json()) as { reply?: string; error?: string };
       if (!res.ok || !data.reply)
-        throw new Error(data.error ?? "Gym Buddy is having trouble responding, try again.");
+        throw new Error(data.error ?? "Ask RN is having trouble responding, try again.");
       return data.reply;
     },
     onSuccess: (reply) => {
@@ -128,7 +128,7 @@ export function GymBuddy() {
         ...prev,
         {
           role: "assistant",
-          content: (e as Error).message || "Gym Buddy is having trouble responding, try again.",
+          content: (e as Error).message || "Ask RN is having trouble responding, try again.",
         },
       ]),
   });
@@ -164,7 +164,7 @@ export function GymBuddy() {
     <>
       <button
         onClick={() => setOpen(true)}
-        aria-label="Open Gym Buddy chat"
+        aria-label="Open Ask RN chat"
         className="fixed right-4 bottom-24 z-40 size-14 rounded-full day-chip-push shadow-lg flex items-center justify-center active:scale-95 transition"
       >
         <MessageCircleMore className="size-6" />
@@ -175,7 +175,7 @@ export function GymBuddy() {
           <SheetHeader className="text-left">
             <div className="flex items-center justify-between gap-2">
               <div>
-                <SheetTitle>Gym Buddy</SheetTitle>
+                <SheetTitle>Ask RN</SheetTitle>
                 <SheetDescription>Your fitness Q&amp;A</SheetDescription>
               </div>
               <div className="flex items-center gap-2 pr-8">
@@ -243,7 +243,7 @@ export function GymBuddy() {
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about form, macros, recovery…"
+              placeholder="Ask Ask RN about form, macros, recovery…"
               disabled={ask.isPending}
             />
             <Button
