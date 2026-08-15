@@ -1,8 +1,29 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { MessageCircleMore, Send, EyeOff, Eye } from "lucide-react";
+import { Send, EyeOff, Eye } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
+
+function RobotIcon({ className = "size-6" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <line x1="9" y1="3" x2="9" y2="6" />
+      <line x1="15" y1="3" x2="15" y2="6" />
+      <rect x="5" y="7" width="14" height="12" rx="4" ry="4" />
+      <circle cx="10" cy="12" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="14" cy="12" r="1.1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
 import {
   Sheet,
   SheetContent,
