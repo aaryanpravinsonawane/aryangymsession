@@ -186,18 +186,33 @@ export function GymBuddy() {
       <button
         onClick={() => setOpen(true)}
         aria-label="Open Ask RN chat"
-        className="fixed right-4 bottom-24 z-40 size-14 rounded-full day-chip-push shadow-lg flex items-center justify-center active:scale-95 transition"
+        className="fixed right-4 bottom-24 z-40 size-14 rounded-full flex items-center justify-center active:scale-95 transition"
+        style={{
+          background: "linear-gradient(135deg, #6a5cf0, #8b7bf7)",
+          boxShadow: "0 0 28px -6px rgba(107, 92, 240, 0.55)",
+        }}
       >
-        <MessageCircleMore className="size-6" />
+        <RobotIcon className="size-7" />
       </button>
 
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="bottom" className="rounded-t-2xl h-[85vh] flex flex-col">
           <SheetHeader className="text-left">
             <div className="flex items-center justify-between gap-2">
-              <div>
-                <SheetTitle>Ask RN</SheetTitle>
-                <SheetDescription>Your fitness Q&amp;A</SheetDescription>
+              <div className="flex items-center gap-3">
+                <div
+                  className="size-[46px] rounded-[13px] flex items-center justify-center shrink-0"
+                  style={{
+                    background: "linear-gradient(135deg, #6a5cf0, #8b7bf7)",
+                    boxShadow: "0 0 24px -5px rgba(107, 92, 240, 0.5)",
+                  }}
+                >
+                  <RobotIcon className="size-6" />
+                </div>
+                <div>
+                  <SheetTitle>Ask RN</SheetTitle>
+                  <SheetDescription>Your fitness Q&amp;A</SheetDescription>
+                </div>
               </div>
               <div className="flex items-center gap-2 pr-8">
                 {incognito && (
