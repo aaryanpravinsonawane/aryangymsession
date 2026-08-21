@@ -13,6 +13,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiParseWorkoutPlanRouteImport } from './routes/api/parse-workout-plan'
 import { Route as ApiGymBuddyChatRouteImport } from './routes/api/gym-buddy-chat'
 import { Route as AuthenticatedWorkoutRouteImport } from './routes/_authenticated/workout'
 import { Route as AuthenticatedWeightRouteImport } from './routes/_authenticated/weight'
@@ -40,6 +41,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiParseWorkoutPlanRoute = ApiParseWorkoutPlanRouteImport.update({
+  id: '/api/parse-workout-plan',
+  path: '/api/parse-workout-plan',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiGymBuddyChatRoute = ApiGymBuddyChatRouteImport.update({
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/weight': typeof AuthenticatedWeightRoute
   '/workout': typeof AuthenticatedWorkoutRoute
   '/api/gym-buddy-chat': typeof ApiGymBuddyChatRoute
+  '/api/parse-workout-plan': typeof ApiParseWorkoutPlanRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -116,6 +123,7 @@ export interface FileRoutesByTo {
   '/weight': typeof AuthenticatedWeightRoute
   '/workout': typeof AuthenticatedWorkoutRoute
   '/api/gym-buddy-chat': typeof ApiGymBuddyChatRoute
+  '/api/parse-workout-plan': typeof ApiParseWorkoutPlanRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -132,6 +140,7 @@ export interface FileRoutesById {
   '/_authenticated/weight': typeof AuthenticatedWeightRoute
   '/_authenticated/workout': typeof AuthenticatedWorkoutRoute
   '/api/gym-buddy-chat': typeof ApiGymBuddyChatRoute
+  '/api/parse-workout-plan': typeof ApiParseWorkoutPlanRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -148,6 +157,7 @@ export interface FileRouteTypes {
     | '/weight'
     | '/workout'
     | '/api/gym-buddy-chat'
+    | '/api/parse-workout-plan'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -162,6 +172,7 @@ export interface FileRouteTypes {
     | '/weight'
     | '/workout'
     | '/api/gym-buddy-chat'
+    | '/api/parse-workout-plan'
   id:
     | '__root__'
     | '/'
@@ -177,6 +188,7 @@ export interface FileRouteTypes {
     | '/_authenticated/weight'
     | '/_authenticated/workout'
     | '/api/gym-buddy-chat'
+    | '/api/parse-workout-plan'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -185,6 +197,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiGymBuddyChatRoute: typeof ApiGymBuddyChatRoute
+  ApiParseWorkoutPlanRoute: typeof ApiParseWorkoutPlanRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -215,6 +228,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/parse-workout-plan': {
+      id: '/api/parse-workout-plan'
+      path: '/api/parse-workout-plan'
+      fullPath: '/api/parse-workout-plan'
+      preLoaderRoute: typeof ApiParseWorkoutPlanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/gym-buddy-chat': {
@@ -314,6 +334,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ApiGymBuddyChatRoute: ApiGymBuddyChatRoute,
+  ApiParseWorkoutPlanRoute: ApiParseWorkoutPlanRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
