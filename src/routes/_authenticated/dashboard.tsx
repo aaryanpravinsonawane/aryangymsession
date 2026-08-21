@@ -28,6 +28,7 @@ function Dashboard() {
         supabase.from("achievements").select("badge_type").order("unlocked_at", { ascending: false }).limit(4),
         supabase.from("general_sessions").select("*").order("date", { ascending: false }).limit(50),
       ]);
+      const exCount = await supabase.from("exercises").select("id", { count: "exact", head: true });
       return {
         prs: prsRes.data ?? [],
         weights: wRes.data ?? [],
@@ -36,6 +37,7 @@ function Dashboard() {
         prHistory: historyRes.data ?? [],
         achievements: achRes.data ?? [],
         generalSessions: gsRes.data ?? [],
+        exerciseCount: exCount.count ?? 0,
       };
     },
   });
@@ -74,6 +76,23 @@ function Dashboard() {
         </p>
         <h1 className="text-3xl font-bold mt-1">Let's train.</h1>
       </div>
+
+      {data && data.exerciseCount === 0 && (
+        <div className="card-elevated p-5">
+          <h3 className="font-semibold flex items-center gap-2">
+            <Sparkles className="size-4 text-pull" /> No workout plan yet
+          </h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Build one from a photo or text and we'll set up your week automatically.
+          </p>
+          <Link
+            to="/build-workout"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-xl day-chip-push px-4 py-2.5 text-sm font-semibold"
+          >
+            Build my workout →
+          </Link>
+        </div>
+      )}
 
       {/* Streak hero */}
       {streak > 0 && (
